@@ -1171,9 +1171,10 @@ static int atmel_pinctrl_probe(struct platform_device *pdev)
 		atmel_pioctrl->pins[i]->line = line;
 
 		pin_desc[i].number = i;
-		/* Pin naming convention: P(bank_name)(bank_pin_number). */
-		pin_desc[i].name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "P%c%u",
-						  bank + 'A', line);
+		/* Pin naming convention: gpioX, where X is the number of the line plus
+			 an offset for the bank that line is on (bank A = 0). */
+		pin_desc[i].name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "gpio%d",
+						  (bank * 32) + line);
 		if (!pin_desc[i].name)
 			return -ENOMEM;
 
