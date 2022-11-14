@@ -1142,9 +1142,9 @@ static int atmel_pinctrl_probe(struct platform_device *pdev)
 		atmel_pioctrl->pins[i]->line = line;
 
 		pin_desc[i].number = i;
-		/* Pin naming convention: P(bank_name)(bank_pin_number). */
-		pin_desc[i].name = kasprintf(GFP_KERNEL, "P%c%d",
-					     bank + 'A', line);
+		/* Pin naming convention: gpioX, where X is the number of the line plus
+			 an offset for the bank that line is on (bank A = 0). */
+		pin_desc[i].name = kasprintf(GFP_KERNEL, "gpio%d", (bank * 32) + line);
 
 		group->name = group_names[i] = pin_desc[i].name;
 		group->pin = pin_desc[i].number;
