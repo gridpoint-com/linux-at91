@@ -4723,6 +4723,38 @@ static const struct macb_config zynq_config = {
 	.usrio = &macb_default_usrio,
 };
 
+static int gridpoint_ec2k_init(struct platform_device *pdev)
+{
+	struct gpio_desc *desc;
+	int err;
+
+	desc = gpio_to_desc(24);
+	if (desc) {
+		err = gpiod_direction_output_raw(desc, 1);
+		if (!err) {
+			dev_info(&pdev->dev, "Reset of ksz8081 via PA24\n");
+			gpiod_set_value(desc, 0);
+			usleep_range(500, 1000);
+			gpiod_set_value(desc, 1);
+			usleep_range(100, 1000);
+		} else {
+			dev_err(&pdev->dev, "Could not set gpio 24 as output\n");
+		}
+	} else {
+		dev_err(&pdev->dev, "Could not get gpio 24\n");
+	}
+
+	return macb_init(pdev);
+}
+
+static const struct macb_config gridpoint_ec2k_config = {
+	.caps = MACB_CAPS_USRIO_DEFAULT_IS_MII_GMII,
+	.dma_burst_length = 16,
+	.clk_init = macb_clk_init,
+	.init = gridpoint_ec2k_init,
+	.usrio = &macb_default_usrio,
+};
+
 static const struct macb_config sama7g5_gem_config = {
 	.caps = MACB_CAPS_GIGABIT_MODE_AVAILABLE | MACB_CAPS_CLK_HW_CHG |
 		MACB_CAPS_MIIONRGMII,
@@ -4758,6 +4790,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,emac", .data = &emac_config },
 	{ .compatible = "cdns,zynqmp-gem", .data = &zynqmp_config},
 	{ .compatible = "cdns,zynq-gem", .data = &zynq_config },
+	{ .compatible = "gridpoint,ec2k", .data = &gridpoint_ec2k_config },
 	{ .compatible = "sifive,fu540-c000-gem", .data = &fu540_c000_config },
 	{ .compatible = "microchip,sama7g5-gem", .data = &sama7g5_gem_config },
 	{ .compatible = "microchip,sama7g5-emac", .data = &sama7g5_emac_config },
